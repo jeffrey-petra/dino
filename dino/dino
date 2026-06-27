@@ -32,13 +32,12 @@ PLAYER_SIZE = 40
 PLAYER_DUCK_SIZE = 25
 
 # Enemy constants
-ENEMY_SPAWN_RATE = 0.012  # Probability per frame to spawn enemy (supplemented by spawn delay)
 ENEMY_SPEED = 7
 ENEMY_WIDTH = 30
 ENEMY_HEIGHT = 50
 ENEMY_MIN_GAP = 220  # Minimum horizontal gap between enemies
-ENEMY_MIN_SPAWN_DELAY = 60  # Minimum frames between spawn attempts
-ENEMY_MAX_SPAWN_DELAY = 120  # Maximum frames between spawn attempts
+ENEMY_MIN_SPAWN_DELAY = 50  # Minimum frames between spawn attempts
+ENEMY_MAX_SPAWN_DELAY = 100  # Maximum frames between spawn attempts
 
 import random
 
@@ -63,6 +62,7 @@ class Player:
 		self.is_ducking = True
 		self.is_down_pressed = True
 		self.height = PLAYER_DUCK_SIZE
+		self.y += (PLAYER_SIZE - PLAYER_DUCK_SIZE)  # Adjust position to duck down
 	
 	def stop_duck(self):
 		self.is_ducking = False
@@ -127,7 +127,7 @@ class Game:
 		self.game_over = False
 		self.score = 0
 		self.current_speed = 5 # Initial speed of the game (pixels per frame/update cycle)
-		self.spawn_timer = random.randint(ENEMY_MIN_SPAWN_DELAY, ENEMY_MAX_SPAWN_DELAY)
+		self.spawn_timer = random.randint(ENEMY_MIN_SPAWN_DELAY, ENEMY_MAX_SPAWN_DELAY) - self.current_speed
 
 		
 	def handle_events(self):
@@ -137,14 +137,14 @@ class Game:
 			elif event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_ESCAPE:
 					self.running = False
-				elif event.key == pygame.K_UP:
+				elif event.key == pygame.K_UP or event.key == pygame.K_SPACE and not self.game_over:
 					self.player.jump()
-				elif event.key == pygame.K_DOWN:
+				elif event.key == pygame.K_DOWN and not self.game_over:
 					self.player.start_duck()
 				elif event.key == pygame.K_r and self.game_over:
 					self.restart_game()
 			elif event.type == pygame.KEYUP:
-				if event.key == pygame.K_DOWN:
+				if event.key == pygame.K_DOWN and not self.game_over:
 					self.player.stop_duck()
 	
 	def restart_game(self):
@@ -179,29 +179,34 @@ class Game:
 		for enemy in self.enemies:
 			enemy.update(self.current_speed)
 
-		# Remove off-screen enemies and update score
-		initial_len = len(self.enemies)
-		self.enemies = [e for e in self.enemies if not e.is_off_screen()]
-		
-		passed_count = initial_len - len(self.enemies)
-		self.score += passed_count * 1 # Score increases based on successful passes
-
+		# Update score
+		if self.clock.get_time() % 2 == 0:
+			self.score += 1  # Increment score based on time survived
 		# Check collision with enemies
 		self.check_collisions()
 
 	def spawn_enemy(self):
 		# Use obstacle spacing and a little variety for a more Chrome-style feel.
-		enemy_type = random.choice(['cactus', 'cactus', 'cactus', 'ptero'])
+		enemy_type = random.choice(['cactus', 'cactus_tall', 'cactus_big', 'bird'])
 
-		if enemy_type == 'ptero' and self.current_speed >= 8:
-			width = 35
-			height = 30
-			y = GROUND_LEVEL + PLAYER_SIZE - height - random.choice([80, 110])
+		if enemy_type == 'bird' and self.current_speed >= 8:
+			width = 35 + random.randint(0, 80)
+			height = 40
+			y = GROUND_LEVEL + PLAYER_SIZE - height - random.choice([5 ,35, 110])
 			color = GRAY
+		elif enemy_type == 'cactus':
+			width = ENEMY_WIDTH
+			height = ENEMY_HEIGHT
+			y = GROUND_LEVEL + PLAYER_SIZE - height
+			color = RED
+		elif enemy_type == 'cactus_tall':
+			width = ENEMY_WIDTH
+			height = ENEMY_HEIGHT + 50
+			y = GROUND_LEVEL + PLAYER_SIZE - height
+			color = RED
 		else:
-			width = ENEMY_WIDTH + random.randint(-5, 10)
-			height = ENEMY_HEIGHT + random.randint(-20, 10)
-			height = max(20, height)
+			width = ENEMY_WIDTH + 80
+			height = ENEMY_HEIGHT
 			y = GROUND_LEVEL + PLAYER_SIZE - height
 			color = RED
 
