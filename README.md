@@ -4,7 +4,7 @@
     <img src="Images/dino-screenshot.png" alt="Game Screenshot">
 </p>
 
-Yes dino game. Used for Evolutionary Algorithm project.
+Yes dino game. Used for Fuzzy Input Algorithm project.
 
 This game currently doesn't run for me with Python 3.14. You may need to use [pyenv](https://github.com/pyenv/pyenv) to switch to 3.12
 
