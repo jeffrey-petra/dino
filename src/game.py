@@ -122,17 +122,33 @@ class Game:
 
     def spawn_enemy(self):
         # Use obstacle spacing and a little variety for a more Chrome-style feel.
-        enemy_type = random.choice(["cactus", "cactus", "cactus", "ptero"])
+        enemy_type = random.choice(
+            ["cactus", "cactus_tall", "cactus_big", "bird", "tall_bird"]
+        )
 
-        if enemy_type == "ptero" and self.current_speed >= 8:
-            width = 35
-            height = 30
-            y = GROUND_LEVEL + PLAYER_SIZE - height - random.choice([30, 60, 120])
+        if enemy_type == "bird" and self.current_speed >= 8:
+            width = 35 + random.randint(0, 80)
+            height = 40
+            y = GROUND_LEVEL + PLAYER_SIZE - height - random.choice([5, 35, 110])
             color = col.GRAY
+        elif enemy_type == "tall_bird" and self.current_speed >= 8:
+            width = 30
+            height = 75
+            y = GROUND_LEVEL + PLAYER_SIZE - height - random.choice([35, 110])
+            color = col.GRAY
+        elif enemy_type == "cactus":
+            width = ENEMY_WIDTH
+            height = ENEMY_HEIGHT
+            y = GROUND_LEVEL + PLAYER_SIZE - height
+            color = col.RED
+        elif enemy_type == "cactus_tall":
+            width = ENEMY_WIDTH
+            height = ENEMY_HEIGHT + 55
+            y = GROUND_LEVEL + PLAYER_SIZE - height
+            color = col.RED
         else:
-            width = ENEMY_WIDTH + random.randint(-5, 10)
-            height = ENEMY_HEIGHT + random.randint(-20, 10)
-            height = max(20, height)
+            width = ENEMY_WIDTH + 75
+            height = ENEMY_HEIGHT
             y = GROUND_LEVEL + PLAYER_SIZE - height
             color = col.RED
 
